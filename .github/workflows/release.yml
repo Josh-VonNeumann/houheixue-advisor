@@ -24,8 +24,14 @@ jobs:
           name: houheixue-advisor-skill
           path: dist/houheixue-advisor.zip
 
-      - name: Publish GitHub release (tags only)
+      - name: Attach zip to GitHub release (tags only)
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/houheixue-advisor.zip --title "$GITHUB_REF_NAME" --generate-notes
+        run: |
+          # 在網頁上建立 Release 時 release 已存在，只需附上 zip；直接推 tag 時則新建 release
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" dist/houheixue-advisor.zip --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" dist/houheixue-advisor.zip --title "$GITHUB_REF_NAME" --generate-notes
+          fi
